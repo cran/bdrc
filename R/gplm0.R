@@ -1,6 +1,6 @@
 #' Generalized power-law model with a constant variance
 #'
-#' gplm0 is used to fit a discharge rating curve for paired measurements of stage and discharge using a generalized power-law model with a constant variance as described in Hrafnkelsson et al. (2020). See "Details" for a more elaborate description of the model.
+#' gplm0 is used to fit a discharge rating curve for paired measurements of stage and discharge using a generalized power-law model with a constant variance as described in Hrafnkelsson et al. (2022). See "Details" for a more elaborate description of the model.
 #' @param formula an object of class "formula", with discharge column name as response and stage column name as a covariate, i.e. of the form \code{y}~\code{x} where \code{y} is discharge in m\eqn{^3/}s and \code{x} is stage in m (it is very important that the data is in the correct units).
 #' @param data data.frame containing the variables specified in formula.
 #' @param c_param stage for which there is zero discharge. If NULL, it is treated as unknown in the model and inferred from the data.
@@ -35,15 +35,20 @@
 #' \item{\code{beta_posterior}}{a numeric vector containing the full thinned posterior samples of the posterior distribution of \eqn{\beta}.}
 #' \item{\code{Deviance_posterior}}{a numeric vector containing the full thinned posterior samples of the posterior distribution of the deviance excluding burn-in samples.}
 #' \item{\code{D_hat}}{deviance at the median value of the parameters.}
-#' \item{\code{num_effective_param}}{number of effective parameters, which is calculated as median(Deviance_posterior) minus D_hat.}
-#' \item{\code{DIC}}{Deviance Information Criterion for the model, calculated as D_hat plus 2*num_effective_parameters.}
+#' \item{\code{effective_num_param_DIC}}{effective number of parameters, which is calculated as median(Deviance_posterior) minus D_hat.}
+#' \item{\code{DIC}}{Deviance Information Criterion for the model, calculated as D_hat plus 2*effective_num_parameters_DIC.}
+#' \item{\code{lppd}}{log pointwise predictive probability of the observed data under the model}
+#' \item{\code{effective_num_param_WAIC}}{effective number of parameters, which is calculated by summing up the posterior variance of the log predictive density for each data point.}
+#' \item{\code{WAIC}}{Watanabe-Akaike information criterion for the model, defined as -2*( lppd - effective_num_param_WAIC ).}
 #' \item{\code{autocorrelation}}{a data frame with the autocorrelation of each parameter for different lags.}
 #' \item{\code{acceptance_rate}}{proportion of accepted samples in the thinned MCMC chain (excluding burn-in).}
 #' \item{\code{formula}}{object of type "formula" provided by the user.}
 #' \item{\code{data}}{data provided by the user, ordered by stage.}
 #' \item{\code{run_info}}{information about the input arguments and the specific parameters used in the MCMC chain.}
-#' @references Hrafnkelsson, B., Sigurdarson, H., and Gardarsson, S. M. (2020). Generalization of the power-law rating curve using hydrodynamic theory and Bayesian hierarchical modeling. arXiv preprint 2010.04769.
 #' @references Gelman, A., Carlin, J. B., Stern, H. S., Dunson, D. B., Vehtari, A., and Rubin, D. B. (2013). Bayesian Data Analysis, Third Edition. Chapman & Hall/CRC Texts in Statistical Science. Taylor & Francis.
+#' @references Hrafnkelsson, B., Sigurdarson, H., and Gardarsson, S. M. (2022). Generalization of the power-law rating curve using hydrodynamic theory and Bayesian hierarchical modeling, Environmetrics, 33(2):e2711.
+#' @references Spiegelhalter, D., Best, N., Carlin, B., Van Der Linde, A. (2002). Bayesian measures of model complexity and fit. Journal of the Royal Statistical Society: Series B (Statistical Methodology) 64(4), 583–639.
+#' @references Watanabe, S. (2010). Asymptotic equivalence of Bayes cross validation and widely applicable information criterion in singular learning theory. J. Mach. Learn. Res. 11, 3571–3594.
 #' @seealso \code{\link{summary.gplm0}} for summaries, \code{\link{predict.gplm0}} for prediction. It is also useful to look at \code{\link{spread_draws}} and \code{\link{plot.gplm0}} to help visualize the full posterior distributions.
 #' @examples
 #' \donttest{
@@ -55,8 +60,8 @@
 #' @export
 gplm0 <- function(formula,data,c_param=NULL,h_max=NULL,parallel=TRUE,num_cores=NULL,forcepoint=rep(FALSE,nrow(data))){
     #argument checking
-    stopifnot('formula' %in% class(formula))
-    stopifnot('data.frame' %in% class(data))
+    stopifnot(inherits(formula,'formula'))
+    stopifnot(inherits(data,'data.frame'))
     stopifnot(is.null(c_param) | is.double(c_param))
     stopifnot(is.null(h_max) | is.double(h_max))
     stopifnot(is.null(num_cores) | is.numeric(num_cores))
@@ -104,14 +109,19 @@ gplm0 <- function(formula,data,c_param=NULL,h_max=NULL,parallel=TRUE,num_cores=N
     result_obj$beta_summary <- get_MCMC_summary(result_obj$beta_posterior,h=h_unique_sorted)
     result_obj$f_summary <- get_MCMC_summary(result_obj$f_posterior,h=h_unique_sorted)
     result_obj$param_summary <- get_MCMC_summary(rbind(MCMC_output_list$x[1,],MCMC_output_list$x[2,],MCMC_output_list$theta))
-    result_obj$param_summary$n_eff_samples <- MCMC_output_list$num_effective_samples
+    result_obj$param_summary$eff_n_samples <- MCMC_output_list$effective_num_samples
     result_obj$param_summary$r_hat <- MCMC_output_list$r_hat
     row.names(result_obj$param_summary) <- param_names
     result_obj$Deviance_summary <- get_MCMC_summary(MCMC_output_list$D)
     #Deviance calculations
     result_obj$D_hat <- MCMC_output_list$D_hat
-    result_obj$num_effective_param <- result_obj$Deviance_summary[,'median']-result_obj$D_hat
-    result_obj$DIC <- result_obj$D_hat + 2*result_obj$num_effective_param
+    result_obj$effective_num_param_DIC <- result_obj$Deviance_summary[,'median']-result_obj$D_hat
+    result_obj$DIC <- result_obj$D_hat + 2*result_obj$effective_num_param_DIC
+    #WAIC calculations
+    waic_list <- calc_waic(result_obj,model_dat)
+    result_obj$lppd <- waic_list$lppd
+    result_obj$effective_num_param_WAIC <- waic_list$p_waic
+    result_obj$WAIC <- waic_list$waic
     #Rhat and autocorrelation
     autocorrelation_df <- as.data.frame(t(MCMC_output_list$autocorrelation))
     names(autocorrelation_df) <- param_names
@@ -191,8 +201,7 @@ gplm0.density_evaluation_known_c <- function(theta,RC){
     yp=(X %*% x)[1:RC$n,]
     #posterior predictive draw
     ypo=yp+as.matrix(rnorm(RC$n))*sqrt(varr)
-    D=-2*sum(log(dlnorm(exp(RC$y[1:RC$n,]),yp,sqrt(varr))))
-
+    D=-2*sum( log(dlnorm(exp(RC$y[1:RC$n,]),yp,sqrt(varr))) )
     return(list("p"=p,"x"=x,"y_post"=yp,"y_post_pred"=ypo,"D"=D))
 }
 
@@ -227,9 +236,7 @@ gplm0.density_evaluation_unknown_c <- function(theta,RC){
     yp=(X %*% x)[1:RC$n,]
     #posterior predictive draw
     ypo=yp+as.matrix(rnorm(RC$n))*sqrt(varr)
-
-    D=-2*sum(log(dlnorm(exp(RC$y[1:RC$n,]),yp,sqrt(varr))))
-
+    D=-2*sum( log(dlnorm(exp(RC$y[1:RC$n,]),yp,sqrt(varr))) )
     return(list("p"=p,"x"=x,"y_post"=yp,"y_post_pred"=ypo,"D"=D))
 }
 
@@ -258,8 +265,7 @@ gplm0.calc_Dhat <- function(theta,RC){
   w=solve(L,RC$y-X%*%RC$mu_x)
   x=RC$mu_x+Sig_x%*%(t(X)%*%solve(t(L),w))
   yp=(X %*% x)[1:RC$n,]
-
-  D=-2*sum(log(dlnorm(exp(RC$y[1:RC$n,]),yp,sqrt(varr))))
+  D=-2*sum( log(dlnorm(exp(RC$y[1:RC$n,]),yp,sqrt(varr))) )
   return(D)
 }
 #' @importFrom stats rnorm dist
@@ -292,7 +298,7 @@ gplm0.predict_u_known_c <- function(theta,x,RC){
     beta_u=as.numeric(mu_x_u) + rnorm(ncol(Sigma_x_u)) %*% chol(Sigma_x_u)
     #buidling blocks of the explanatory matrix X calculated
     l=log(RC$h_u-RC$c)
-    X=cbind(rep(1,m),l,diag(l))
+    X=if(length(l)>1) cbind(rep(1,m),l,diag(l)) else matrix(c(1,l,1),nrow=1)
     x_u=c(x[1:2],beta_u)
     #sample from the posterior of discharge y
     yp_u <- c(X%*%x_u)
@@ -333,7 +339,7 @@ gplm0.predict_u_unknown_c <- function(theta,x,RC){
     m_above_c <- sum(above_c)
     #buidling blocks of the explanatory matrix X calculated
     l=log(RC$h_u[above_c]-RC$h_min+exp(zeta))
-    X=cbind(rep(1,m_above_c),l,diag(l))
+    X=if(length(l)>1) cbind(rep(1,m_above_c),l,diag(l)) else matrix(c(1,l,1),nrow=1)
     #vector of parameters
     x_u=c(x[1:2],beta_u[above_c])
     #sample from the posterior of discharge y

@@ -48,8 +48,11 @@ gplm0 returns an object of class "gplm0". An object of class "gplm0" is a list c
 \item{\code{beta_posterior}}{a numeric vector containing the full thinned posterior samples of the posterior distribution of \eqn{\beta}.}
 \item{\code{Deviance_posterior}}{a numeric vector containing the full thinned posterior samples of the posterior distribution of the deviance excluding burn-in samples.}
 \item{\code{D_hat}}{deviance at the median value of the parameters.}
-\item{\code{num_effective_param}}{number of effective parameters, which is calculated as median(Deviance_posterior) minus D_hat.}
-\item{\code{DIC}}{Deviance Information Criterion for the model, calculated as D_hat plus 2*num_effective_parameters.}
+\item{\code{effective_num_param_DIC}}{effective number of parameters, which is calculated as median(Deviance_posterior) minus D_hat.}
+\item{\code{DIC}}{Deviance Information Criterion for the model, calculated as D_hat plus 2*effective_num_parameters_DIC.}
+\item{\code{lppd}}{log pointwise predictive probability of the observed data under the model}
+\item{\code{effective_num_param_WAIC}}{effective number of parameters, which is calculated by summing up the posterior variance of the log predictive density for each data point.}
+\item{\code{WAIC}}{Watanabe-Akaike information criterion for the model, defined as -2*( lppd - effective_num_param_WAIC ).}
 \item{\code{autocorrelation}}{a data frame with the autocorrelation of each parameter for different lags.}
 \item{\code{acceptance_rate}}{proportion of accepted samples in the thinned MCMC chain (excluding burn-in).}
 \item{\code{formula}}{object of type "formula" provided by the user.}
@@ -57,7 +60,7 @@ gplm0 returns an object of class "gplm0". An object of class "gplm0" is a list c
 \item{\code{run_info}}{information about the input arguments and the specific parameters used in the MCMC chain.}
 }
 \description{
-gplm0 is used to fit a discharge rating curve for paired measurements of stage and discharge using a generalized power-law model with a constant variance as described in Hrafnkelsson et al. (2020). See "Details" for a more elaborate description of the model.
+gplm0 is used to fit a discharge rating curve for paired measurements of stage and discharge using a generalized power-law model with a constant variance as described in Hrafnkelsson et al. (2022). See "Details" for a more elaborate description of the model.
 }
 \details{
 The generalized power-law model is of the form
@@ -77,9 +80,13 @@ summary(gplm0.fit)
 }
 }
 \references{
-Hrafnkelsson, B., Sigurdarson, H., and Gardarsson, S. M. (2020). Generalization of the power-law rating curve using hydrodynamic theory and Bayesian hierarchical modeling. arXiv preprint 2010.04769.
-
 Gelman, A., Carlin, J. B., Stern, H. S., Dunson, D. B., Vehtari, A., and Rubin, D. B. (2013). Bayesian Data Analysis, Third Edition. Chapman & Hall/CRC Texts in Statistical Science. Taylor & Francis.
+
+Hrafnkelsson, B., Sigurdarson, H., and Gardarsson, S. M. (2022). Generalization of the power-law rating curve using hydrodynamic theory and Bayesian hierarchical modeling, Environmetrics, 33(2):e2711.
+
+Spiegelhalter, D., Best, N., Carlin, B., Van Der Linde, A. (2002). Bayesian measures of model complexity and fit. Journal of the Royal Statistical Society: Series B (Statistical Methodology) 64(4), 583–639.
+
+Watanabe, S. (2010). Asymptotic equivalence of Bayes cross validation and widely applicable information criterion in singular learning theory. J. Mach. Learn. Res. 11, 3571–3594.
 }
 \seealso{
 \code{\link{summary.gplm0}} for summaries, \code{\link{predict.gplm0}} for prediction. It is also useful to look at \code{\link{spread_draws}} and \code{\link{plot.gplm0}} to help visualize the full posterior distributions.

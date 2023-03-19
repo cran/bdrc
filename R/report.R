@@ -12,7 +12,7 @@ get_report_components <- function(x,type=1){
     if(!(class(x) %in% legal_types)){
         stop(error_msg1)
     }
-    if(class(x)=='tournament'){
+    if(inherits(x,'tournament')){
         if(type==1){
             m_obj <- list(x$winner)
             names(m_obj) <- class(x$winner)
@@ -54,17 +54,17 @@ get_report_components <- function(x,type=1){
         output_list$main_page_plots <- plot_tournament_grob(t_obj)
         output_list$main_page_table <- lapply(m_obj,function(m){
                                             param <- get_param_names(class(m),m$run_info$c_param)
-                                            table <- rbind(m$param_summary,data.frame(m$Deviance_summary,r_hat=NA,n_eff_samples=NA))
+                                            table <- rbind(m$param_summary,data.frame(m$Deviance_summary,r_hat=NA,eff_n_samples=NA))
                                             table[,c('lower','median','upper','r_hat')] <- format(round(table[,c('lower','median','upper','r_hat')],digits=3),nsmall=3)
                                             row.names(table) <- c(sapply(1:length(param),get_param_expression),"Deviance")
-                                            table['Deviance',c('n_eff_samples','r_hat')] <- ''
-                                            names(table) <- c(paste0(names(table[,c('lower','median','upper')]),c('-2.5%','-50%','-97.5%')),'num_eff_samples','r_hat')
+                                            table['Deviance',c('eff_n_samples','r_hat')] <- ''
+                                            names(table) <- c(paste0(names(table[,c('lower','median','upper')]),c('-2.5%','-50%','-97.5%')),'eff_n_samples','r_hat')
                                             tableGrob(table,theme=ttheme_minimal(rowhead=list(fg_params=list(parse=TRUE))))
                                         })
         output_list$mcmc_hist_list <- lapply(m_obj,function(m){
             params <- get_param_names(class(m),m$run_info$c_param)
             hist_plot_list <- lapply(1:length(params), function(j){
-                autoplot(m,type='histogram',param=params[j],transformed = TRUE)
+                autoplot(m,type='histogram',param=params[j],transformed = TRUE,title='')
             })
         })
         mcmc_table <- lapply(m_obj,function(m){
@@ -72,19 +72,21 @@ get_report_components <- function(x,type=1){
                        nr_chains=m$run_info$num_chains,
                        burnin=m$run_info$burnin,
                        thin=m$run_info$thin,
-                       nr_eff_param=format(m$num_effective_param,digits=2),
+                       eff_num_param=format(m$effective_num_param_WAIC,digits=2),
                        acceptance_rate=format(m$acceptance_rate,digits=2))
         })
         mcmc_table <- t(do.call('rbind',mcmc_table))
         output_list$mcmc_table <- tableGrob(mcmc_table,theme=ttheme_minimal())
-        tour_table <- t_obj$summary[c("round","game","model","DIC","P","winner")]
-        tour_table[c('DIC','P')] <- round(tour_table[c('DIC','P')],digits=2)
-        output_list$tour_table <- tableGrob(tour_table,theme=ttheme_minimal(),rows=NULL)
+        tour_table <- t_obj$summary
+        col_idx1 <- (names(tour_table) %in% c('round','game','model','WAIC','DIC','Post_prob','winner'))
+        col_idx2 <- !(names(tour_table) %in% c('round','game','model','winner'))
+        tour_table[,col_idx2] <- round(tour_table[,col_idx2],digits=2)
+        output_list$tour_table <- tableGrob(tour_table[,col_idx1],theme=ttheme_minimal(),rows=NULL)
         output_list$dev_boxplot <- autoplot(t_obj,type='deviance')
         output_list$tournament_results <- plot_tournament_grob(t_obj,type='tournament_results')
         output_list$conv_diag_plots <- lapply(t_obj$contestants,function(x){
-                                           plot_grob(x,type='convergence_diagnostics')
-                                       })
+            plot_grob(x,type='convergence_diagnostics')
+        })
     }
     return(output_list)
 }
@@ -145,7 +147,7 @@ save_report <- function(report_pages,path=NULL,paper='a4',width=9,height=11){
         path <- paste0(getwd(),'/report.pdf')
     }
     if(interactive()){
-        answer <- askYesNo(paste0('Do you wish to save the report as a pdf file at the following location: ',path,'?'))
+        answer <- askYesNo(paste0('Do you wish to save the report as a pdf file at the following location:\n ',path,'?'))
     }else{
         stop('Unable to ask permission for writing the report to the file system. get_report() must be used in an interactive R session')
     }

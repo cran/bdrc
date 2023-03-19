@@ -5,18 +5,18 @@ plot_tournament_fun <- function(x,type='deviance'){
             data.frame(model=class(m),D=c(m$Deviance_posterior))
         })
         deviance_post_dat <- do.call(rbind,deviance_post_dat)
-        DIC_dat <- lapply(x$contestants,function(m){
-            data.frame(model=class(m),DIC=c(m$DIC))
+        WAIC_dat <- lapply(x$contestants,function(m){
+            data.frame(model=class(m),WAIC=c(m$WAIC))
         })
-        DIC_dat <- do.call(rbind,DIC_dat)
+        WAIC_dat <- do.call(rbind,WAIC_dat)
         p <- ggplot(data=deviance_post_dat,aes(x=.data$model,y=.data$D)) +
             geom_boxplot(size=0.4,width=0.4,color="black",outlier.size=0.2,outlier.shape=21,outlier.fill="gray90",fill="gray90") +
             stat_boxplot(geom='errorbar',width=0.2) +
-            geom_line(data=DIC_dat,aes(x=.data$model,y=.data$DIC,group=1),color='gray30') +
-            geom_point(data=DIC_dat,aes(x=.data$model,y=.data$DIC),size=3,shape=23,fill='red2',color='black') +
+            geom_line(data=WAIC_dat,aes(x=.data$model,y=.data$WAIC,group=1),color='gray30') +
+            geom_point(data=WAIC_dat,aes(x=.data$model,y=.data$WAIC),size=3,shape=23,fill='red2',color='black') +
             theme_bdrc() +
             xlab('') +
-            ylab('Deviance & DIC')
+            ylab('Deviance & WAIC')
     }
     return(p)
 }
@@ -92,13 +92,14 @@ plot_tournament_grob <- function(x,type='panel',transformed=FALSE){
                                       x$summary$model[5:6],
                                       paste0('Tournament winner  =>  ',class(x$winner),
                                              paste0(rep(' ',20),collapse=' '))))
-        prob_dat <- data.frame(P=round(x$summary$P,digits=3),
-                               winner=x$summary$winner,
-                               x=c(loc_pts$x[1:4],0.8*(loc_pts$x[5:6]-1.5)+1.5),
-                               y=loc_pts$y[1:6]+0.5)
+        method <- if(grepl("WAIC",x$info$method)) "WAIC" else if(grepl("DIC",x$info$method)) "DIC" else "Post_prob"
+        result_dat <- data.frame(mc_stat=paste0(ifelse(method=='Post_prob',paste0("P="),paste0(method,"=\n")),round(x$summary[[method]],digits=if(method=="Post_prob") 2 else 1 )),
+                                 winner=x$summary$winner,
+                                 x=c(loc_pts$x[1:4],0.8*(loc_pts$x[5:6]-1.5)+1.5),
+                                 y=loc_pts$y[1:6]+0.5)
         game_results <- ggplot() +
             geom_segment(data=loc_pts[1:6,],aes(x=.data$x,y=.data$y,xend=.data$xend,yend=.data$yend)) +
-            geom_text(data=prob_dat, aes(x=.data$x,y=.data$y,label=.data$P,color=.data$winner,size=7)) +
+            geom_text(data=result_dat, aes(x=.data$x,y=.data$y,label=.data$mc_stat,color=.data$winner,size=7)) +
             geom_label(data=loc_pts[5:7,],aes(x=.data$x,y=.data$y,label=.data$model),label.padding=unit(0.5,"lines"),label.size=0,color="Black",fill="white",size=6) +
             scale_colour_manual(values = c("red", "green3")) +
             theme_classic() +
@@ -147,12 +148,12 @@ summary.tournament <- function(object,...){
 #'
 #' Compare the four discharge rating curves from the tournament object in different ways
 #'
-#' @param x an object of class "tournament"
+#' @param object an object of class "tournament"
+#' @param ... other plotting parameters (not used in this function)
 #' @param type a character denoting what type of plot should be drawn. Possible types are
 #' \itemize{
 #'  \item{"deviance"}{ to plot the deviance of the four models.}
 #' }
-#' @param ... further arguments passed to other methods.
 #' @return returns an object of class "ggplot2".
 #' @seealso \code{\link{tournament}} to run a discharge rating curve tournament and \code{\link{summary.tournament}} for summaries.
 #' @examples
@@ -166,13 +167,12 @@ summary.tournament <- function(object,...){
 #' @importFrom ggplot2 ggplot geom_boxplot stat_boxplot geom_line geom_point xlab ylab
 #' @importFrom rlang .data
 #' @export
-autoplot.tournament <- function(x,type='deviance',...){
-    args <- list(...)
+autoplot.tournament <- function(object,...,type='deviance'){
     legal_types <- c('deviance')
     if(!(type %in% legal_types)){
         stop(paste('Type argument not recognized. Possible types are:\n - ',paste(legal_types,collapse='\n - ')))
     }else if(type=="deviance"){
-        p <- plot_tournament_fun(x,type=type)
+        p <- plot_tournament_fun(object,type=type)
     }
     return(p)
 }
@@ -183,6 +183,7 @@ autoplot.tournament <- function(x,type='deviance',...){
 #' Compare the four models from the tournament object in multiple ways
 #'
 #' @param x an object of class "tournament"
+#' @param ... other plotting parameters (not used in this function)
 #' @param type a character denoting what type of plot should be drawn. Possible types are
 #' \itemize{
 #'   \item{"deviance"}{ to plot the deviance of the four models.}
@@ -191,10 +192,9 @@ autoplot.tournament <- function(x,type='deviance',...){
 #'   \item{"f"}{ to plot the power-law exponent.}
 #'   \item{"sigma_eps"}{ to plot the standard deviation on the data level.}
 #'   \item{"residuals"}{ to plot the log residuals.}
-#'   \item{"residuals"}{ to plot tournament results visually, game for game.}
+#'   \item{"tournament_results"}{ to plot tournament results visually, game for game.}
 #'  }
 #' @param transformed a logical value indicating whether the quantity should be plotted on a transformed scale used during the Bayesian inference. Defaults to FALSE.
-#' @param ... further arguments passed to other methods.
 #' @return No return value, called for side effects
 #' @seealso \code{\link{tournament}} to run a discharge rating curve tournament and \code{\link{summary.tournament}} for summaries.
 #' @examples
@@ -213,15 +213,17 @@ autoplot.tournament <- function(x,type='deviance',...){
 #' @importFrom grid grid.draw
 #' @importFrom gridExtra grid.arrange
 #' @export
-plot.tournament <- function(x,type='tournament_results',transformed=FALSE,...){
-    args <- list(...)
+plot.tournament <- function(x,...,type='tournament_results',transformed=FALSE){
     legal_types <- c("deviance","tournament_results","rating_curve","rating_curve_mean","sigma_eps","f","residuals","convergence_diagnostics","panel","tournament_results")
-    if(type=='deviance'){
+    error_msg <- paste0('Type not recognized. Possible types are:',paste(legal_types,collapse='\n - '))
+    if( is.null(type) ){
+        stop(error_msg)
+    }else if(type=='deviance'){
         p <- autoplot(x,type=type)
     }else if(type%in%legal_types){
         p <- plot_tournament_grob(x,type=type,transformed=transformed,...)
     }else{
-        stop(paste0('Type not recognized. Possible types are:',paste(legal_types,collapse='\n - ')))
+        stop(error_msg)
     }
     if('ggplot' %in% class(p)){
         print(p)

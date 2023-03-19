@@ -31,42 +31,45 @@ gplm(
 }
 \value{
 gplm returns an object of class "gplm". An object of class "gplm" is a list containing the following components:
- \item{\code{rating_curve}}{a data frame with 2.5\%, 50\% and 97.5\% percentiles of the posterior predictive distribution of the rating curve.}
- \item{\code{rating_curve_mean}}{a data frame with 2.5\%, 50\% and 97.5\% percentiles of the posterior distribution of the mean of the rating curve.}
- \item{\code{param_summary}}{a data frame with 2.5\%, 50\% and 97.5\% percentiles of the posterior distribution of latent- and hyperparameters. Additionally contains columns with r_hat and the effective number of samples for each parameter as defined in Gelman et al. (2013).}
- \item{\code{f_summary}}{a data frame with 2.5\%, 50\% and 97.5\% percentiles of the posterior distribution of \eqn{f(h)}.}
- \item{\code{beta_summary}}{a data frame with 2.5\%, 50\% and 97.5\% percentiles of the posterior distribution of \eqn{\beta(h)}.}
- \item{\code{sigma_eps_summary}}{a data frame with 2.5\%, 50\% and 97.5\% percentiles of the posterior distribution of \eqn{\sigma_\varepsilon(h)}.}
- \item{\code{Deviance_summary}}{a data frame with 2.5\%, 50\% and 97.5\% percentiles of the posterior distribution of the deviance.}
- \item{\code{rating_curve_posterior}}{a matrix containing the full thinned posterior samples of the posterior predictive distribution of the rating curve excluding burn-in samples.}
- \item{\code{rating_curve_mean_posterior}}{a matrix containing the full thinned posterior samples of the posterior distribution of the mean of the rating curve excluding burn-in samples.}
- \item{\code{a_posterior}}{a numeric vector containing the full thinned posterior samples of the posterior distribution of \eqn{a} excluding burn-in samples.}
- \item{\code{b_posterior}}{a numeric vector containing the full thinned posterior samples of the posterior distribution of \eqn{b} excluding burn-in samples.}
- \item{\code{c_posterior}}{a numeric vector containing the full thinned posterior samples of the posterior distribution of \eqn{c} excluding burn-in samples.}
- \item{\code{sigma_beta_posterior}}{a numeric vector containing the full thinned posterior samples of the posterior distribution of \eqn{\sigma_\beta} excluding burn-in samples.}
- \item{\code{phi_beta_posterior}}{a numeric vector containing the full thinned posterior samples of the posterior distribution of \eqn{\phi_\beta} excluding burn-in samples.}
- \item{\code{sigma_eta_posterior}}{a numeric vector containing the full thinned posterior samples of the posterior distribution of \eqn{\sigma_\eta} excluding burn-in samples.}
- \item{\code{eta_1_posterior}}{a numeric vector containing the full thinned posterior samples of the posterior distribution of \eqn{\eta_1} excluding burn-in samples.}
- \item{\code{eta_2_posterior}}{a numeric vector containing the full thinned posterior samples of the posterior distribution of \eqn{\eta_2} excluding burn-in samples.}
- \item{\code{eta_3_posterior}}{a numeric vector containing the full thinned posterior samples of the posterior distribution of \eqn{\eta_3} excluding burn-in samples.}
- \item{\code{eta_4_posterior}}{a numeric vector containing the full thinned posterior samples of the posterior distribution of \eqn{\eta_4} excluding burn-in samples.}
- \item{\code{eta_5_posterior}}{a numeric vector containing the full thinned posterior samples of the posterior distribution of \eqn{\eta_5} excluding burn-in samples.}
- \item{\code{eta_6_posterior}}{a numeric vector containing the full thinned posterior samples of the posterior distribution of \eqn{\eta_6} excluding burn-in samples.}
- \item{\code{f_posterior}}{a numeric vector containing the full thinned posterior samples of the posterior distribution of \eqn{f(h)} excluding burn-in samples.}
- \item{\code{beta_posterior}}{a numeric vector containing the full thinned posterior samples of the posterior distribution of \eqn{\beta(h)} excluding burn-in samples.}
- \item{\code{sigma_eps_posterior}}{a numeric vector containing the full thinned posterior samples of the posterior distribution of \eqn{\sigma_\varepsilon(h)} excluding burn-in samples.}
- \item{\code{Deviance_posterior}}{a numeric vector containing the full thinned posterior samples of the posterior distribution of the deviance excluding burn-in samples.}
- \item{\code{D_hat}}{deviance at the median value of the parameters.}
- \item{\code{num_effective_param}}{number of effective parameters, which is calculated as median(Deviance_posterior) minus D_hat.}
- \item{\code{DIC}}{Deviance Information Criterion for the model, calculated as D_hat plus 2*num_effective_parameters.}
- \item{\code{autocorrelation}}{a data frame with the autocorrelation of each parameter for different lags.}
- \item{\code{acceptance_rate}}{proportion of accepted samples in the thinned MCMC chain (excluding burn-in).}
- \item{\code{formula}}{object of type "formula" provided by the user.}
- \item{\code{data}}{data provided by the user, ordered by stage.}
- \item{\code{run_info}}{information about the input arguments and the specific parameters used in the MCMC chain.}
+\item{\code{rating_curve}}{a data frame with 2.5\%, 50\% and 97.5\% percentiles of the posterior predictive distribution of the rating curve.}
+\item{\code{rating_curve_mean}}{a data frame with 2.5\%, 50\% and 97.5\% percentiles of the posterior distribution of the mean of the rating curve.}
+\item{\code{param_summary}}{a data frame with 2.5\%, 50\% and 97.5\% percentiles of the posterior distribution of latent- and hyperparameters. Additionally contains columns with r_hat and the effective number of samples for each parameter as defined in Gelman et al. (2013).}
+\item{\code{f_summary}}{a data frame with 2.5\%, 50\% and 97.5\% percentiles of the posterior distribution of \eqn{f(h)}.}
+\item{\code{beta_summary}}{a data frame with 2.5\%, 50\% and 97.5\% percentiles of the posterior distribution of \eqn{\beta(h)}.}
+\item{\code{sigma_eps_summary}}{a data frame with 2.5\%, 50\% and 97.5\% percentiles of the posterior distribution of \eqn{\sigma_\varepsilon(h)}.}
+\item{\code{Deviance_summary}}{a data frame with 2.5\%, 50\% and 97.5\% percentiles of the posterior distribution of the deviance.}
+\item{\code{rating_curve_posterior}}{a matrix containing the full thinned posterior samples of the posterior predictive distribution of the rating curve excluding burn-in samples.}
+\item{\code{rating_curve_mean_posterior}}{a matrix containing the full thinned posterior samples of the posterior distribution of the mean of the rating curve excluding burn-in samples.}
+\item{\code{a_posterior}}{a numeric vector containing the full thinned posterior samples of the posterior distribution of \eqn{a} excluding burn-in samples.}
+\item{\code{b_posterior}}{a numeric vector containing the full thinned posterior samples of the posterior distribution of \eqn{b} excluding burn-in samples.}
+\item{\code{c_posterior}}{a numeric vector containing the full thinned posterior samples of the posterior distribution of \eqn{c} excluding burn-in samples.}
+\item{\code{sigma_beta_posterior}}{a numeric vector containing the full thinned posterior samples of the posterior distribution of \eqn{\sigma_\beta} excluding burn-in samples.}
+\item{\code{phi_beta_posterior}}{a numeric vector containing the full thinned posterior samples of the posterior distribution of \eqn{\phi_\beta} excluding burn-in samples.}
+\item{\code{sigma_eta_posterior}}{a numeric vector containing the full thinned posterior samples of the posterior distribution of \eqn{\sigma_\eta} excluding burn-in samples.}
+\item{\code{eta_1_posterior}}{a numeric vector containing the full thinned posterior samples of the posterior distribution of \eqn{\eta_1} excluding burn-in samples.}
+\item{\code{eta_2_posterior}}{a numeric vector containing the full thinned posterior samples of the posterior distribution of \eqn{\eta_2} excluding burn-in samples.}
+\item{\code{eta_3_posterior}}{a numeric vector containing the full thinned posterior samples of the posterior distribution of \eqn{\eta_3} excluding burn-in samples.}
+\item{\code{eta_4_posterior}}{a numeric vector containing the full thinned posterior samples of the posterior distribution of \eqn{\eta_4} excluding burn-in samples.}
+\item{\code{eta_5_posterior}}{a numeric vector containing the full thinned posterior samples of the posterior distribution of \eqn{\eta_5} excluding burn-in samples.}
+\item{\code{eta_6_posterior}}{a numeric vector containing the full thinned posterior samples of the posterior distribution of \eqn{\eta_6} excluding burn-in samples.}
+\item{\code{f_posterior}}{a numeric vector containing the full thinned posterior samples of the posterior distribution of \eqn{f(h)} excluding burn-in samples.}
+\item{\code{beta_posterior}}{a numeric vector containing the full thinned posterior samples of the posterior distribution of \eqn{\beta(h)} excluding burn-in samples.}
+\item{\code{sigma_eps_posterior}}{a numeric vector containing the full thinned posterior samples of the posterior distribution of \eqn{\sigma_\varepsilon(h)} excluding burn-in samples.}
+\item{\code{Deviance_posterior}}{a numeric vector containing the full thinned posterior samples of the posterior distribution of the deviance excluding burn-in samples.}
+\item{\code{D_hat}}{deviance at the median value of the parameters.}
+\item{\code{effective_num_param_DIC}}{effective number of parameters, which is calculated as median(Deviance_posterior) minus D_hat.}
+\item{\code{DIC}}{Deviance Information Criterion for the model, calculated as D_hat plus 2*effective_num_parameters_DIC.}
+\item{\code{lppd}}{log pointwise predictive probability of the observed data under the model}
+\item{\code{effective_num_param_WAIC}}{effective number of parameters, which is calculated by summing up the posterior variance of the log predictive density for each data point.}
+\item{\code{WAIC}}{Watanabe-Akaike information criterion for the model, defined as -2*( lppd - effective_num_param_WAIC ).}
+\item{\code{autocorrelation}}{a data frame with the autocorrelation of each parameter for different lags.}
+\item{\code{acceptance_rate}}{proportion of accepted samples in the thinned MCMC chain (excluding burn-in).}
+\item{\code{formula}}{object of type "formula" provided by the user.}
+\item{\code{data}}{data provided by the user, ordered by stage.}
+\item{\code{run_info}}{information about the input arguments and the specific parameters used in the MCMC chain.}
 }
 \description{
-gplm is used to fit a discharge rating curve for paired measurements of stage and discharge using a generalized power-law model with variance that varies with stage as described in Hrafnkelsson et al. (2020).  See "Details" for a more elaborate description of the model.
+gplm is used to fit a discharge rating curve for paired measurements of stage and discharge using a generalized power-law model with variance that varies with stage as described in Hrafnkelsson et al. (2022).  See "Details" for a more elaborate description of the model.
 }
 \details{
 The generalized power-law model is of the form
@@ -86,9 +89,13 @@ summary(gplm.fit)
 }
 }
 \references{
-Hrafnkelsson, B., Sigurdarson, H., and Gardarsson, S. M. (2020). Generalization of the power-law rating curve using hydrodynamic theory and Bayesian hierarchical modeling. arXiv preprint 2010.04769.
-
 Gelman, A., Carlin, J. B., Stern, H. S., Dunson, D. B., Vehtari, A., and Rubin, D. B. (2013). Bayesian Data Analysis, Third Edition. Chapman & Hall/CRC Texts in Statistical Science. Taylor & Francis.
+
+Hrafnkelsson, B., Sigurdarson, H., and Gardarsson, S. M. (2022). Generalization of the power-law rating curve using hydrodynamic theory and Bayesian hierarchical modeling, Environmetrics, 33(2):e2711.
+
+Spiegelhalter, D., Best, N., Carlin, B., Van Der Linde, A. (2002). Bayesian measures of model complexity and fit. Journal of the Royal Statistical Society: Series B (Statistical Methodology) 64(4), 583–639.
+
+Watanabe, S. (2010). Asymptotic equivalence of Bayes cross validation and widely applicable information criterion in singular learning theory. J. Mach. Learn. Res. 11, 3571–3594.
 }
 \seealso{
 \code{\link{summary.gplm}} for summaries, \code{\link{predict.gplm}} for prediction and \code{\link{plot.gplm}} for plots. \code{\link{spread_draws}} and \code{\link{gather_draws}} are also useful to aid further visualization of the full posterior distributions.

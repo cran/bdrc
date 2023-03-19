@@ -218,7 +218,7 @@ get_MCMC_output_list <- function(theta_m,RC,density_fun,unobserved_prediction_fu
   chain_var_hat <- ((n-1)*within_chain_var + between_chain_var)/n
   output_list$r_hat <- sqrt(chain_var_hat/within_chain_var)
   output_list$autocorrelation <- 1-variogram/(2*matrix(rep(chain_var_hat,T_max),nrow=nrow(variogram)))
-  output_list$num_effective_samples <-round(m*n/(1+2*rowSums(output_list$autocorrelation)))
+  output_list$effective_num_samples <-round(m*n/(1+2*rowSums(output_list$autocorrelation)))
   output_list$acceptance_rate <- sum(output_list$acceptance_vec)/ncol(output_list$acceptance_vec)
   output_list$param_mean <- output_list$param_var <- output_list$variogram_chain <- NULL
   return(output_list)
@@ -531,5 +531,17 @@ get_rhat_dat <- function(m,param,smoothness=20){
   })
   rhat_dat <- do.call('rbind',rhat_dat)
   return(rhat_dat)
+}
+
+#' @importFrom stats dlnorm var
+calc_waic <- function(m,d){
+  sigma_eps <- m$sigma_eps_posterior
+  yp <- m$rating_curve_mean_posterior
+  rc <- m$rating_curve
+  idx <- as.numeric(merge(cbind("rowname"=rownames(rc),rc),d,by.x="h",by.y=colnames(d)[2],all.y = T)$rowname)
+  lppd <- sum( sapply( 1:nrow(d), function(n) { log( mean( dlnorm( d[n,1], log(yp[idx[n],]), if(grepl("0",class(m))) sigma_eps else sigma_eps[idx[n],] ) ) ) } ) )
+  p_waic <- sum( sapply( 1:nrow(d), function(n) { var( log( dlnorm( d[n,1], log(yp[idx[n],]), if(grepl("0",class(m))) sigma_eps else sigma_eps[idx[n],]) ) ) } ) )
+  waic <- -2*(lppd-p_waic)
+  return(list("waic"=waic,"lppd"=lppd,"p_waic"=p_waic))
 }
 

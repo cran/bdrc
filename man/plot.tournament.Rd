@@ -4,10 +4,12 @@
 \alias{plot.tournament}
 \title{Plot method for discharge rating curve tournament}
 \usage{
-\method{plot}{tournament}(x, type = "tournament_results", transformed = FALSE, ...)
+\method{plot}{tournament}(x, ..., type = "tournament_results", transformed = FALSE)
 }
 \arguments{
 \item{x}{an object of class "tournament"}
+
+\item{...}{other plotting parameters (not used in this function)}
 
 \item{type}{a character denoting what type of plot should be drawn. Possible types are
 \itemize{
@@ -17,12 +19,10 @@
   \item{"f"}{ to plot the power-law exponent.}
   \item{"sigma_eps"}{ to plot the standard deviation on the data level.}
   \item{"residuals"}{ to plot the log residuals.}
-  \item{"residuals"}{ to plot tournament results visually, game for game.}
+  \item{"tournament_results"}{ to plot tournament results visually, game for game.}
  }}
 
 \item{transformed}{a logical value indicating whether the quantity should be plotted on a transformed scale used during the Bayesian inference. Defaults to FALSE.}
-
-\item{...}{further arguments passed to other methods.}
 }
 \value{
 No return value, called for side effects
