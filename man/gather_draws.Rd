@@ -7,35 +7,37 @@
 gather_draws(mod, ..., transformed = F)
 }
 \arguments{
-\item{mod}{an object of class "plm0","plm","gplm0" or "gplm".}
+\item{mod}{An object of class "plm0", "plm", "gplm0" or "gplm".}
 
-\item{...}{any number of character vectors containing valid names of parameters in the model or "rating_curve" and "rating_curve_mean". Also accepts "latent_parameters" and "hyperparameters".}
+\item{...}{Any number of character vectors containing valid names of parameters in the model or "rating_curve" and "rating_curve_mean". Also accepts "latent_parameters" and "hyperparameters".}
 
-\item{transformed}{boolean value determining whether the parameter is to be represented on the transformed scale used for sampling in the MCMC chain or the original scale. Defaults to FALSE.}
+\item{transformed}{A boolean value determining whether the parameter is to be represented on the transformed scale used for sampling in the MCMC chain or the original scale. Defaults to FALSE.}
 }
 \value{
-Data frame with columns
-\code{chain}
-\code{iter}
-\code{param}
-\code{value}
+A data frame with columns:
+\describe{
+  \item{\code{chain}}{The chain number.}
+  \item{\code{iter}}{The iteration number.}
+  \item{\code{param}}{The parameter name.}
+  \item{\code{value}}{The parameter value.}
+}
 }
 \description{
 Useful to convert MCMC chain draws of particular parameters or output from the model object to a long format for further data wrangling
 }
 \examples{
 \donttest{
-data(krokfors)
-set.seed(1)
-plm0.fit <- plm0(formula=Q~W,data=krokfors,num_cores=2)
-hyp_samples <- gather_draws(plm0.fit,'hyperparameters')
-head(hyp_samples)
-rating_curve_samples <- gather_draws(plm0.fit,'rating_curve','rating_curve_mean')
-head(rating_curve_samples)
+ data(krokfors)
+ set.seed(1)
+ plm0.fit <- plm0(formula=Q~W,data=krokfors,num_cores=2)
+ hyp_samples <- gather_draws(plm0.fit,'hyperparameters')
+ head(hyp_samples)
+ rating_curve_samples <- gather_draws(plm0.fit,'rating_curve','rating_curve_mean')
+ head(rating_curve_samples)
 }
 }
 \references{
-B. Hrafnkelsson, H. Sigurdarson, S.M. Gardarsson, 2020, Generalization of the power-law rating curve using hydrodynamic theory and Bayesian hierarchical modeling. arXiv preprint 2010.04769
+Hrafnkelsson, B., Sigurdarson, H., Rögnvaldsson, S., Jansson, A. Ö., Vias, R. D., and Gardarsson, S. M. (2022). Generalization of the power-law rating curve using hydrodynamic theory and Bayesian hierarchical modeling, Environmetrics, 33(2):e2711. doi: https://doi.org/10.1002/env.2711
 }
 \seealso{
 \code{\link{plm0}}, \code{\link{plm}}, \code{\link{gplm0}}, \code{\link{gplm}} for further information on parameters
